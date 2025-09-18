@@ -3,6 +3,7 @@ defmodule ParroquiaxWeb.QrController do
 
   alias Parroquiax.QrEntry
   alias Parroquiax.Repo
+  alias Phoenix.PubSub
 
   def create(conn, %{"qr" => qr, "location" => location} = params) do
     datetime_str = params["date"]
@@ -29,11 +30,7 @@ defmodule ParroquiaxWeb.QrController do
 
       case Repo.insert(changeset) do
         {:ok, qr_entry} ->
-          ParroquiaxWeb.Endpoint.broadcast(
-            "Elixir.ParroquiaxWeb.PageLive",
-            "new_qr_entry",
-            qr_entry
-          )
+          PubSub.broadcast(Parroquiax.PubSub, "new_qr_entry", qr_entry)
 
           conn
           |> put_status(:created)

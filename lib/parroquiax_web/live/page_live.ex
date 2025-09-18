@@ -3,19 +3,21 @@ defmodule ParroquiaxWeb.PageLive do
 
   alias Parroquiax.QrEntry
   alias Parroquiax.Repo
+  alias Phoenix.PubSub
 
-  @topic inspect(__MODULE__)
+  @topic Parroquiax.PubSub
 
   def mount(_params, _session, socket) do
-    if connected?(socket) do
-      ParroquiaxWeb.Endpoint.subscribe(@topic)
-    end
-
     qr_entries = Repo.all(QrEntry)
     {:ok, assign(socket, :qr_entries, qr_entries)}
   end
 
-  def handle_info({"new_qr_entry", qr_entry}, socket) do
+  def handle_params(_params, _url, socket) do
+    PubSub.subscribe(@topic, "new_qr_entry")
+    {:noreply, socket}
+  end
+
+  def handle_info(qr_entry, socket) do
     {:noreply, update(socket, :qr_entries, fn qr_entries -> [qr_entry | qr_entries] end)}
   end
 
