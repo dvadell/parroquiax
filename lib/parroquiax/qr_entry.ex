@@ -1,8 +1,11 @@
 defmodule Parroquiax.QrEntry do
+  @moduledoc """
+  Represents a QR entry.
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
-schema "qr_entries" do
+  schema "qr_entries" do
     field :qr, :string
     field :location, :string
     field :date, :utc_datetime

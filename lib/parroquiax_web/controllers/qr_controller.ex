@@ -11,7 +11,8 @@ defmodule ParroquiaxWeb.QrController do
       if datetime_str do
         case DateTime.from_iso8601(datetime_str) do
           {:ok, datetime, _offset} -> datetime
-          {:error, _} -> nil # Invalid datetime format
+          # Invalid datetime format
+          {:error, _reason} -> nil
         end
       else
         DateTime.utc_now() |> DateTime.truncate(:second)
