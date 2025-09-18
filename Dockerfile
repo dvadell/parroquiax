@@ -89,7 +89,8 @@ RUN chown nobody /app
 ENV MIX_ENV="prod"
 
 # Only copy the final release from the build stage
-COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/parroquiax ./
+COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/parroquiax/bin/ ./bin/
+COPY --from=builder --chown=nobody:root /app/rel/overlays/bin/migrate ./bin/migrate
 
 USER nobody
 
@@ -98,4 +99,4 @@ USER nobody
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
 
-CMD ["/app/bin/server"]
+CMD ["/bin/sh", "-c", "/app/bin/migrate && /app/bin/server"]
