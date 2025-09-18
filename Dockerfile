@@ -99,5 +99,5 @@ USER nobody
 # ENTRYPOINT ["/tini", "--"]
 
 # CMD ["/app/bin/server"]
-CMD ["/bin/sh", "-c", "/app/bin/migrate && /app/bin/parroquiax start"]
+CMD ["/bin/sh", "-c", "/app/bin/migrate && /app/bin/server"]
 
