@@ -15,7 +15,7 @@ defmodule ParroquiaxWeb.PageLive do
     {:ok, assign(socket, :qr_entries, qr_entries)}
   end
 
-  def handle_info({:new_qr_entry, qr_entry}, socket) do
+  def handle_info({"new_qr_entry", qr_entry}, socket) do
     {:noreply, update(socket, :qr_entries, fn qr_entries -> [qr_entry | qr_entries] end)}
   end
 
