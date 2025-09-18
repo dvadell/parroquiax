@@ -1,13 +1,13 @@
 # Parroquiax
 
-To start your Phoenix server:
+## To run:
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+* Create an `.env` file with your actual values. See `.env.sample`.
+* Run: 
+```
+docker-compose up -d
+```
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
-
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
 ## Learn more
 
