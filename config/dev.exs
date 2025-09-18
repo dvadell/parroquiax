@@ -4,6 +4,7 @@ import Config
 config :parroquiax, Parroquiax.Repo,
   username: "postgres",
   password: "postgres",
+  port: 15432,
   hostname: "localhost",
   database: "parroquiax_dev",
   stacktrace: true,
