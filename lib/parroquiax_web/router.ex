@@ -21,9 +21,11 @@ defmodule ParroquiaxWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", ParroquiaxWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", ParroquiaxWeb do
+    pipe_through :api
+
+    post "/qr", QrController, :create
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:parroquiax, :dev_routes) do
