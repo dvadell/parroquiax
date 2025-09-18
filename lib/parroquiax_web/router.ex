@@ -17,7 +17,7 @@ defmodule ParroquiaxWeb.Router do
   scope "/", ParroquiaxWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", PageLive
   end
 
   # Other scopes may use custom stacks.

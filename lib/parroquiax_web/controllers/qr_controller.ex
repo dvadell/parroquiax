@@ -29,6 +29,8 @@ defmodule ParroquiaxWeb.QrController do
 
       case Repo.insert(changeset) do
         {:ok, qr_entry} ->
+          ParroquiaxWeb.Endpoint.broadcast(ParroquiaxWeb.PageLive, :new_qr_entry, qr_entry)
+
           conn
           |> put_status(:created)
           |> json(%{
