@@ -16,9 +16,10 @@ defmodule Parroquiax.DataCase do
 
   use ExUnit.CaseTemplate
 
+  alias Ecto.Adapters.SQL.Sandbox
+
   using do
     quote do
-      alias Ecto.Adapters.SQL.Sandbox
       alias Parroquiax.Repo
 
       import Ecto
