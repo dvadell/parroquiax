@@ -29,6 +29,7 @@ defmodule ParroquiaxWeb.CoreComponents do
   use Phoenix.Component
   use Gettext, backend: ParroquiaxWeb.Gettext
 
+  alias Phoenix.HTML.Form
   alias Phoenix.LiveView.JS
 
   @doc """
@@ -181,7 +182,7 @@ defmodule ParroquiaxWeb.CoreComponents do
   def input(%{type: "checkbox"} = assigns) do
     assigns =
       assign_new(assigns, :checked, fn ->
-        Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
+        Form.normalize_value("checkbox", assigns[:value])
       end)
 
     ~H"""
@@ -413,7 +414,7 @@ defmodule ParroquiaxWeb.CoreComponents do
   attr :name, :string, required: true
   attr :class, :string, default: "size-4"
 
-  def icon(%{name: "hero-" <> _} = assigns) do
+  def icon(%{name: "hero-" <> _rest} = assigns) do
     ~H"""
     <span class={[@name, @class]} />
     """
