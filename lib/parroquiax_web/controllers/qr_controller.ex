@@ -1,13 +1,29 @@
 defmodule ParroquiaxWeb.QrController do
   use ParroquiaxWeb, :controller
 
+  import Ecto.Query
+
+  alias Parroquiax.Location
   alias Parroquiax.QrEntry
   alias Parroquiax.Repo
   alias Phoenix.PubSub
 
-  def create(conn, %{"qr" => qr, "location" => location} = params) do
+  def create(conn, %{"qr" => qr, "location" => location_name} = params) do
     datetime_str = params["date"]
-    epoch = params["epoch"] || 0
+
+    last_location =
+      Repo.one(
+        from l in Location,
+          order_by: [desc: l.current_epoch],
+          limit: 1
+      )
+
+    epoch =
+      if last_location do
+        last_location.current_epoch
+      else
+        0
+      end
 
     datetime =
       if datetime_str do
@@ -29,7 +45,7 @@ defmodule ParroquiaxWeb.QrController do
         %QrEntry{}
         |> QrEntry.changeset(%{
           qr: qr,
-          location: location,
+          location: location_name,
           date: datetime,
           epoch: epoch
         })

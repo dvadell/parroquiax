@@ -1,6 +1,7 @@
 defmodule ParroquiaxWeb.QrControllerTest do
   use ParroquiaxWeb.ConnCase
 
+  alias Parroquiax.Location
   alias Parroquiax.QrEntry
   alias Parroquiax.Repo
 
@@ -20,6 +21,7 @@ defmodule ParroquiaxWeb.QrControllerTest do
       qr_entry = Repo.get!(QrEntry, id)
       assert qr_entry.qr == "some qr"
       assert qr_entry.location == "some location"
+      assert qr_entry.epoch == 0
     end
 
     test "creates qr_entry with date and returns created when data is valid", %{conn: conn} do
@@ -34,20 +36,9 @@ defmodule ParroquiaxWeb.QrControllerTest do
       assert qr_entry.date == expected_datetime
     end
 
-    test "creates qr_entry with epoch and returns created when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/api/qr", Map.put(@valid_attrs, "epoch", 1))
-      assert %{"id" => id} = json_response(conn, 201)
-      assert %{"message" => "QR entry created successfully"} = json_response(conn, 201)
+    test "creates qr_entry with epoch from location", %{conn: conn} do
+      {:ok, location} = Repo.insert(%Location{location: "some location", current_epoch: 5})
 
-      qr_entry = Repo.get!(QrEntry, id)
-      assert qr_entry.qr == "some qr"
-      assert qr_entry.location == "some location"
-      assert qr_entry.epoch == 1
-    end
-
-    test "creates qr_entry with default epoch and returns created when data is valid", %{
-      conn: conn
-    } do
       conn = post(conn, ~p"/api/qr", @valid_attrs)
       assert %{"id" => id} = json_response(conn, 201)
       assert %{"message" => "QR entry created successfully"} = json_response(conn, 201)
@@ -55,7 +46,7 @@ defmodule ParroquiaxWeb.QrControllerTest do
       qr_entry = Repo.get!(QrEntry, id)
       assert qr_entry.qr == "some qr"
       assert qr_entry.location == "some location"
-      assert qr_entry.epoch == 0
+      assert qr_entry.epoch == location.current_epoch
     end
 
     test "returns bad request when qr is missing", %{conn: conn} do
