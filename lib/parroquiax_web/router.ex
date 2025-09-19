@@ -25,6 +25,7 @@ defmodule ParroquiaxWeb.Router do
     pipe_through :api
 
     post "/qr", QrController, :create
+    post "/locations", LocationController, :create
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

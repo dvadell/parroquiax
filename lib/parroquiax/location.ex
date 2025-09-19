@@ -17,6 +17,5 @@ defmodule Parroquiax.Location do
     location
     |> cast(attrs, [:location, :current_epoch])
     |> validate_required([:location, :current_epoch])
-    |> unique_constraint(:location)
   end
 end

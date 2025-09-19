@@ -16,14 +16,6 @@ defmodule Parroquiax.LocationTest do
     refute changeset.valid?
   end
 
-  test "changeset with duplicate location" do
-    {:ok, _location} = Repo.insert(%Location{location: "some location", current_epoch: 1})
-    changeset = Location.changeset(%Location{}, @valid_attrs)
-    {:error, changeset} = Repo.insert(changeset)
-    assert {message, _meta} = changeset.errors[:location]
-    assert message == "has already been taken"
-  end
-
   test "changeset with default epoch" do
     changeset = Location.changeset(%Location{}, %{location: "another location"})
     assert changeset.valid?
