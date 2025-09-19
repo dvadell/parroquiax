@@ -34,6 +34,30 @@ defmodule ParroquiaxWeb.QrControllerTest do
       assert qr_entry.date == expected_datetime
     end
 
+    test "creates qr_entry with epoch and returns created when data is valid", %{conn: conn} do
+      conn = post(conn, ~p"/api/qr", Map.put(@valid_attrs, "epoch", 1))
+      assert %{"id" => id} = json_response(conn, 201)
+      assert %{"message" => "QR entry created successfully"} = json_response(conn, 201)
+
+      qr_entry = Repo.get!(QrEntry, id)
+      assert qr_entry.qr == "some qr"
+      assert qr_entry.location == "some location"
+      assert qr_entry.epoch == 1
+    end
+
+    test "creates qr_entry with default epoch and returns created when data is valid", %{
+      conn: conn
+    } do
+      conn = post(conn, ~p"/api/qr", @valid_attrs)
+      assert %{"id" => id} = json_response(conn, 201)
+      assert %{"message" => "QR entry created successfully"} = json_response(conn, 201)
+
+      qr_entry = Repo.get!(QrEntry, id)
+      assert qr_entry.qr == "some qr"
+      assert qr_entry.location == "some location"
+      assert qr_entry.epoch == 0
+    end
+
     test "returns bad request when qr is missing", %{conn: conn} do
       conn = post(conn, ~p"/api/qr", %{"location" => "some location"})
       assert %{"error" => "Missing required fields: qr and location"} = json_response(conn, 400)

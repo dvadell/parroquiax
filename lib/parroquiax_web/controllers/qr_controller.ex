@@ -7,6 +7,7 @@ defmodule ParroquiaxWeb.QrController do
 
   def create(conn, %{"qr" => qr, "location" => location} = params) do
     datetime_str = params["date"]
+    epoch = params["epoch"] || 0
 
     datetime =
       if datetime_str do
@@ -26,7 +27,12 @@ defmodule ParroquiaxWeb.QrController do
     else
       changeset =
         %QrEntry{}
-        |> QrEntry.changeset(%{qr: qr, location: location, date: datetime})
+        |> QrEntry.changeset(%{
+          qr: qr,
+          location: location,
+          date: datetime,
+          epoch: epoch
+        })
 
       case Repo.insert(changeset) do
         {:ok, qr_entry} ->
@@ -39,7 +45,8 @@ defmodule ParroquiaxWeb.QrController do
             id: qr_entry.id,
             qr: qr_entry.qr,
             location: qr_entry.location,
-            date: qr_entry.date
+            date: qr_entry.date,
+            epoch: qr_entry.epoch
           })
 
         {:error, changeset} ->
