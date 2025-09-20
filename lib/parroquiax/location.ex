@@ -15,7 +15,7 @@ defmodule Parroquiax.Location do
   @doc false
   def changeset(location, attrs) do
     location
-    |> cast(attrs, [:location, :current_epoch])
-    |> validate_required([:location, :current_epoch])
+    |> cast(attrs, [:location])
+    |> validate_required([:location])
   end
 end

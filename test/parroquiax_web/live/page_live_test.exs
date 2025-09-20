@@ -2,35 +2,62 @@ defmodule ParroquiaxWeb.PageLiveTest do
   use ParroquiaxWeb.ConnCase
 
   import Phoenix.LiveViewTest
-  alias Ecto.Adapters.SQL.Sandbox
+
+  alias Parroquiax.Location
   alias Parroquiax.QrEntry
   alias Parroquiax.Repo
 
-  @create_attrs %{qr: "qr_code_1", location: "location_1", date: DateTime.utc_now()}
+  @topic Parroquiax.PubSub
 
-  setup %{conn: conn} do
-    :ok = Sandbox.checkout(Parroquiax.Repo)
-    {:ok, conn: conn, sandbox_owner: self()}
+  setup do
+    Repo.insert!(%Location{location: "loc1", current_epoch: 1})
+    Repo.insert!(%Location{location: "loc2", current_epoch: 2})
+
+    Repo.insert!(%QrEntry{qr: "qr1", location: "loc1", epoch: 1, date: ~U[2023-01-01 23:00:07Z]})
+    Repo.insert!(%QrEntry{qr: "qr2", location: "loc1", epoch: 0, date: ~U[2023-01-01 23:00:07Z]})
+    Repo.insert!(%QrEntry{qr: "qr3", location: "loc2", epoch: 2, date: ~U[2023-01-01 23:00:07Z]})
+    Repo.insert!(%QrEntry{qr: "qr4", location: "loc2", epoch: 1, date: ~U[2023-01-01 23:00:07Z]})
+
+    :ok
   end
 
-  test "displays new QR entries via PubSub", %{conn: conn, sandbox_owner: sandbox_owner} do
-    {:ok, lv, html} = live(conn, "/", session: %{"ecto_sandbox_owner" => sandbox_owner})
-    assert Floki.find(html, "#qr-entries li") == []
+  test "mount correctly filters qr_entries" do
+    {:ok, view, _html} = live(build_conn(), "/")
 
-    new_qr_entry = Repo.insert!(%QrEntry{} |> QrEntry.changeset(@create_attrs))
+    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 2
+    assert render(view) =~ "qr1"
+    assert render(view) =~ "qr3"
+  end
 
-    Phoenix.PubSub.broadcast(
-      Parroquiax.PubSub,
-      "new_qr_entry",
-      new_qr_entry
-    )
+  test "handle_info updates qr_entries with matching entry" do
+    {:ok, view, _html} = live(build_conn(), "/")
 
-    updated_html = render(lv)
+    new_qr_entry = %QrEntry{
+      qr: "new_qr",
+      location: "loc1",
+      epoch: 1,
+      date: ~U[2023-01-01 23:00:07Z]
+    }
 
-    assert updated_html =~ "QR:</strong> #{new_qr_entry.qr}</p>"
-    assert updated_html =~ "Location:</strong> #{new_qr_entry.location}</p>"
+    Phoenix.PubSub.broadcast(@topic, "new_qr_entry", new_qr_entry)
 
-    assert updated_html =~
-             "<li class=\"mb-2 p-2 border rounded-lg shadow-sm\"><p><strong>QR:</strong> #{new_qr_entry.qr}</p>"
+    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 3
+    assert render(view) =~ "new_qr"
+  end
+
+  test "handle_info does not update qr_entries with non-matching entry" do
+    {:ok, view, _html} = live(build_conn(), "/")
+
+    new_qr_entry = %QrEntry{
+      qr: "new_qr",
+      location: "loc1",
+      epoch: 0,
+      date: ~U[2023-01-01 23:00:07Z]
+    }
+
+    Phoenix.PubSub.broadcast(@topic, "new_qr_entry", new_qr_entry)
+
+    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 2
+    refute render(view) =~ "new_qr"
   end
 end

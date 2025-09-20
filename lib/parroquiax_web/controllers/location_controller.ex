@@ -1,37 +1,24 @@
 defmodule ParroquiaxWeb.LocationController do
   use ParroquiaxWeb, :controller
 
-  import Ecto.Query
-
   alias Parroquiax.Location
   alias Parroquiax.Repo
+  alias Phoenix.PubSub
 
   def create(conn, %{"location" => location_name}) do
-    last_location =
-      Repo.one(
-        from l in Location,
-          where: l.location == ^location_name,
-          order_by: [desc: l.current_epoch],
-          limit: 1
-      )
-
-    epoch =
-      if last_location do
-        last_location.current_epoch + 1
-      else
-        1
-      end
-
     changeset =
       %Location{}
-      |> Location.changeset(%{location: location_name, current_epoch: epoch})
+      |> Location.changeset(%{location: location_name})
 
     case Repo.insert(changeset) do
       {:ok, location} ->
+        PubSub.broadcast(Parroquiax.PubSub, "reset", nil)
+
+        dbg()
         conn
         |> put_status(:created)
         |> json(%{
-          message: "Location entry created successfully",
+          message: "Nueva ronda",
           id: location.id,
           location: location.location,
           current_epoch: location.current_epoch
