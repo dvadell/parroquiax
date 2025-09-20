@@ -7,7 +7,7 @@ defmodule Parroquiax.Location do
 
   schema "locations" do
     field :location, :string
-    field :current_epoch, :integer, default: 0
+    field :current_epoch, :integer, read_after_writes: true
 
     timestamps()
   end

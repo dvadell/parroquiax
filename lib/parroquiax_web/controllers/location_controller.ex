@@ -14,7 +14,6 @@ defmodule ParroquiaxWeb.LocationController do
       {:ok, location} ->
         PubSub.broadcast(Parroquiax.PubSub, "reset", nil)
 
-        dbg()
         conn
         |> put_status(:created)
         |> json(%{

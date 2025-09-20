@@ -16,10 +16,5 @@ defmodule Parroquiax.LocationTest do
     refute changeset.valid?
   end
 
-  test "changeset with default epoch" do
-    changeset = Location.changeset(%Location{}, %{location: "another location"})
-    assert changeset.valid?
-    location = Ecto.Changeset.apply_changes(changeset)
-    assert location.current_epoch == 0
-  end
+  
 end

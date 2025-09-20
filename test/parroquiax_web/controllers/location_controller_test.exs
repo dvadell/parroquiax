@@ -7,6 +7,7 @@ defmodule ParroquiaxWeb.LocationControllerTest do
   @valid_attrs %{"location" => "some location"}
 
   setup %{conn: conn} do
+    Ecto.Adapters.SQL.query!(Repo, "ALTER SEQUENCE locations_current_epoch_seq RESTART WITH 1", [])
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
@@ -18,7 +19,7 @@ defmodule ParroquiaxWeb.LocationControllerTest do
 
       location = Repo.get!(Location, id)
       assert location.location == "some location"
-      assert location.current_epoch == 0
+      assert location.current_epoch == 1
     end
 
     test "creates location with same name and increments epoch", %{conn: conn} do
@@ -27,14 +28,14 @@ defmodule ParroquiaxWeb.LocationControllerTest do
 
       location = Repo.get!(Location, id)
       assert location.location == "some location"
-      assert location.current_epoch == 0
+      assert location.current_epoch == 1
 
       conn = post(conn, ~p"/api/locations", @valid_attrs)
       assert %{"id" => new_id} = json_response(conn, 201)
 
       new_location = Repo.get!(Location, new_id)
       assert new_location.location == "some location"
-      assert new_location.current_epoch == 1
+      assert new_location.current_epoch == 2
     end
 
     test "returns bad request when location is missing", %{conn: conn} do

@@ -24,9 +24,9 @@ defmodule ParroquiaxWeb.PageLiveTest do
   test "mount correctly filters qr_entries" do
     {:ok, view, _html} = live(build_conn(), "/")
 
-    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 2
-    assert render(view) =~ "qr1"
+    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 1
     assert render(view) =~ "qr3"
+    refute render(view) =~ "qr1"
   end
 
   test "handle_info updates qr_entries with matching entry" do
@@ -34,15 +34,16 @@ defmodule ParroquiaxWeb.PageLiveTest do
 
     new_qr_entry = %QrEntry{
       qr: "new_qr",
-      location: "loc1",
-      epoch: 1,
+      location: "loc2",
+      epoch: 2,
       date: ~U[2023-01-01 23:00:07Z]
     }
 
     Phoenix.PubSub.broadcast(@topic, "new_qr_entry", new_qr_entry)
 
-    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 3
+    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 2
     assert render(view) =~ "new_qr"
+    assert render(view) =~ "qr3"
   end
 
   test "handle_info does not update qr_entries with non-matching entry" do
@@ -57,7 +58,8 @@ defmodule ParroquiaxWeb.PageLiveTest do
 
     Phoenix.PubSub.broadcast(@topic, "new_qr_entry", new_qr_entry)
 
-    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 2
+    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 1
     refute render(view) =~ "new_qr"
+    assert render(view) =~ "qr3"
   end
 end
