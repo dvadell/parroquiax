@@ -15,6 +15,4 @@ defmodule Parroquiax.LocationTest do
     changeset = Location.changeset(%Location{}, @invalid_attrs)
     refute changeset.valid?
   end
-
-  
 end

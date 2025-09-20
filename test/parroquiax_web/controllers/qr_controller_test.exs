@@ -37,7 +37,7 @@ defmodule ParroquiaxWeb.QrControllerTest do
     end
 
     test "creates qr_entry with epoch from location", %{conn: conn} do
-      {:ok, location} = Repo.insert(%Location{location: "some location", current_epoch: 5})
+      {:ok, location} = Repo.insert(%Location{location: "some location"})
 
       conn = post(conn, ~p"/api/qr", @valid_attrs)
       assert %{"id" => id} = json_response(conn, 201)

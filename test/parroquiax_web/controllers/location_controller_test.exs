@@ -1,13 +1,14 @@
 defmodule ParroquiaxWeb.LocationControllerTest do
   use ParroquiaxWeb.ConnCase
 
+  alias Ecto.Adapters.SQL
   alias Parroquiax.Location
   alias Parroquiax.Repo
 
   @valid_attrs %{"location" => "some location"}
 
   setup %{conn: conn} do
-    Ecto.Adapters.SQL.query!(Repo, "ALTER SEQUENCE locations_current_epoch_seq RESTART WITH 1", [])
+    SQL.query!(Repo, "ALTER SEQUENCE locations_current_epoch_seq RESTART WITH 1", [])
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 

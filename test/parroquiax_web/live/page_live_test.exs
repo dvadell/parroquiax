@@ -10,18 +10,18 @@ defmodule ParroquiaxWeb.PageLiveTest do
   @topic Parroquiax.PubSub
 
   setup do
-    Repo.insert!(%Location{location: "loc1", current_epoch: 1})
-    Repo.insert!(%Location{location: "loc2", current_epoch: 2})
+    {:ok, loc1} = Repo.insert(%Location{location: "loc1"})
+    {:ok, loc2} = Repo.insert(%Location{location: "loc2"})
 
-    Repo.insert!(%QrEntry{qr: "qr1", location: "loc1", epoch: 1, date: ~U[2023-01-01 23:00:07Z]})
-    Repo.insert!(%QrEntry{qr: "qr2", location: "loc1", epoch: 0, date: ~U[2023-01-01 23:00:07Z]})
-    Repo.insert!(%QrEntry{qr: "qr3", location: "loc2", epoch: 2, date: ~U[2023-01-01 23:00:07Z]})
-    Repo.insert!(%QrEntry{qr: "qr4", location: "loc2", epoch: 1, date: ~U[2023-01-01 23:00:07Z]})
+    Repo.insert!(%QrEntry{qr: "qr1", location: "loc1", epoch: loc1.current_epoch, date: ~U[2023-01-01 23:00:07Z]})
+    Repo.insert!(%QrEntry{qr: "qr2", location: "loc1", epoch: loc1.current_epoch, date: ~U[2023-01-01 23:00:07Z]})
+    Repo.insert!(%QrEntry{qr: "qr3", location: "loc2", epoch: loc2.current_epoch, date: ~U[2023-01-01 23:00:07Z]})
+    Repo.insert!(%QrEntry{qr: "qr4", location: "loc2", epoch: loc1.current_epoch, date: ~U[2023-01-01 23:00:07Z]})
 
-    :ok
+    {:ok, %{loc1: loc1, loc2: loc2}}
   end
 
-  test "mount correctly filters qr_entries" do
+  test "mount correctly filters qr_entries", %{loc2: _loc2} do
     {:ok, view, _html} = live(build_conn(), "/")
 
     assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 1
@@ -29,13 +29,13 @@ defmodule ParroquiaxWeb.PageLiveTest do
     refute render(view) =~ "qr1"
   end
 
-  test "handle_info updates qr_entries with matching entry" do
+  test "handle_info updates qr_entries with matching entry", %{loc2: loc2} do
     {:ok, view, _html} = live(build_conn(), "/")
 
     new_qr_entry = %QrEntry{
       qr: "new_qr",
       location: "loc2",
-      epoch: 2,
+      epoch: loc2.current_epoch,
       date: ~U[2023-01-01 23:00:07Z]
     }
 
@@ -46,13 +46,13 @@ defmodule ParroquiaxWeb.PageLiveTest do
     assert render(view) =~ "qr3"
   end
 
-  test "handle_info does not update qr_entries with non-matching entry" do
+  test "handle_info does not update qr_entries with non-matching entry", %{loc1: loc1} do
     {:ok, view, _html} = live(build_conn(), "/")
 
     new_qr_entry = %QrEntry{
       qr: "new_qr",
       location: "loc1",
-      epoch: 0,
+      epoch: loc1.current_epoch - 1,
       date: ~U[2023-01-01 23:00:07Z]
     }
 
