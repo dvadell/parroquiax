@@ -178,7 +178,7 @@ defmodule ParroquiaxWeb.PageLive do
         </div>
       </.modal>
 
-      <div class="container mx-auto p-4 bg-white">
+      <div class="w-full p-4 bg-white">
         <h1 class="text-3xl font-bold mb-4">Presentes</h1>
         <ul id="presentes-entries" class="list-disc pl-5">
           <%= for {qr_entry, index} <- Enum.with_index(@presentes_entries) do %>
