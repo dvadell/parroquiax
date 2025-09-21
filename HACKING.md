@@ -1,12 +1,3 @@
-# How to test
-```
-mix format
-mix credo
-mix dialyzer
-mix sobelow --config
-MIX_ENV=test mix test
-```
-
 # Project Structure
 
 ## Database Tables
@@ -34,3 +25,23 @@ MIX_ENV=test mix test
 *   **`priv/repo/migrations/*_change_current_epoch_to_identity.exs`**: This migration alters the `current_epoch` column in the `locations` table to be an identity column, automatically generating its values.
 *   **`lib/parroquiax_web/router.ex`**: This file defines the application's routes. The `/api/qr` endpoint is configured here to direct incoming requests to the `QrController`.
 *   **`test/parroquiax_web/controllers/qr_controller_test.exs`**: Contains unit tests for the `QrController`. These tests ensure that the API endpoint behaves as expected, covering successful creation, validation errors, and correct data handling.
+
+# How to test
+```
+mix format
+mix credo
+mix dialyzer
+mix sobelow --config
+MIX_ENV=test mix test
+```
+
+## Useful curl commands:
+```
+curl -X POST -H "Content-Type: application/json" -d '{"location": "main_entrance4"}' http://localhost:4000/api/locations
+curl -X POST -H "Content-Type: application/json" -d '{"qr": "6666-qr-code", "location": "another-location6", "date": "2025-09-19T00:00:00Z"}' http://localhost:4000/api/qr
+```
+
+## Create an apk
+```
+eas build --platform android --profile preview
+```
