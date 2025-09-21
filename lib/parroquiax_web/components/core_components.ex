@@ -467,4 +467,21 @@ defmodule ParroquiaxWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  @doc """
+  Renders a modal dialog.
+  """
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  slot :inner_block, required: true
+
+  def modal(assigns) do
+    ~H"""
+    <div id={@id} class={["modal", if(@show, do: "modal-open")]}>
+      <div class="modal-box">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
 end

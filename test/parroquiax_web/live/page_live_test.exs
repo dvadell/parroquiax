@@ -121,12 +121,43 @@ defmodule ParroquiaxWeb.PageLiveTest do
 
     assert Repo.get(QrEntry, presente_entry.id) != nil
 
+    # Click "Borrar" link
     view
     |> element(~s(a[phx-value-id="#{presente_entry.id}"]))
     |> render_click()
 
+    assert render(view) =~ "Esta seguro que quiere borrar esta entrada?"
+
+    # Click "Borrar" in modal
+    view
+    |> element(~s(#delete-modal button[phx-click="delete_confirmed"]))
+    |> render_click()
+
     refute render(view) =~ "qr3"
     assert Repo.get(QrEntry, presente_entry.id) == nil
+  end
+
+  test "cancels deleting a presente entry", %{loc2: loc2} do
+    {:ok, view, _html} = live(build_conn(), "/")
+
+    presente_entry = Repo.get_by!(QrEntry, qr: "qr3", epoch: loc2.current_epoch)
+
+    assert Repo.get(QrEntry, presente_entry.id) != nil
+
+    # Click "Borrar" link
+    view
+    |> element(~s(a[phx-value-id="#{presente_entry.id}"]))
+    |> render_click()
+
+    assert render(view) =~ "Esta seguro que quiere borrar esta entrada?"
+
+    # Click "Cancelar" in modal
+    view
+    |> element(~s(#delete-modal button[phx-click="cancel_delete"]))
+    |> render_click()
+
+    assert render(view) =~ "qr3"
+    assert Repo.get(QrEntry, presente_entry.id) != nil
   end
 
   test "deletes an ausente entry", %{} do
@@ -134,8 +165,16 @@ defmodule ParroquiaxWeb.PageLiveTest do
 
     assert Repo.get_by(QrEntry, qr: "qr1") != nil
 
+    # Click "Borrar" link
     view
     |> element(~s(a[phx-value-qr="qr1"]))
+    |> render_click()
+
+    assert render(view) =~ "Esta seguro que quiere borrar esta entrada?"
+
+    # Click "Borrar" in modal
+    view
+    |> element(~s(#delete-modal button[phx-click="delete_confirmed"]))
     |> render_click()
 
     refute render(view) =~ "qr1"
