@@ -98,7 +98,8 @@ defmodule ParroquiaxWeb.PageLiveTest do
     refute Floki.text(presentes_item) =~ "Date:"
 
     # Click to expand
-    rendered_view_after_click = view |> element(presentes_item_selector) |> render_click()
+    clickable_selector = "ul#presentes-entries li[data-testid=qr-entry] > div"
+    rendered_view_after_click = view |> element(clickable_selector) |> render_click()
 
     # Assert it's now expanded
     assert Floki.text(rendered_view_after_click) =~ "Location: #{loc2.location}"
@@ -106,10 +107,38 @@ defmodule ParroquiaxWeb.PageLiveTest do
 
     # Click to collapse again
     rendered_view_after_second_click =
-      view |> element(presentes_item_selector) |> render_click()
+      view |> element(clickable_selector) |> render_click()
 
     # Assert it's collapsed again
     refute Floki.text(rendered_view_after_second_click) =~ "Location:"
     refute Floki.text(rendered_view_after_second_click) =~ "Date:"
+  end
+
+  test "deletes a presente entry", %{loc2: loc2} do
+    {:ok, view, _html} = live(build_conn(), "/")
+
+    presente_entry = Repo.get_by!(QrEntry, qr: "qr3", epoch: loc2.current_epoch)
+
+    assert Repo.get(QrEntry, presente_entry.id) != nil
+
+    view
+    |> element(~s(a[phx-value-id="#{presente_entry.id}"]))
+    |> render_click()
+
+    refute render(view) =~ "qr3"
+    assert Repo.get(QrEntry, presente_entry.id) == nil
+  end
+
+  test "deletes an ausente entry", %{} do
+    {:ok, view, _html} = live(build_conn(), "/")
+
+    assert Repo.get_by(QrEntry, qr: "qr1") != nil
+
+    view
+    |> element(~s(a[phx-value-qr="qr1"]))
+    |> render_click()
+
+    refute render(view) =~ "qr1"
+    assert Repo.get_by(QrEntry, qr: "qr1") == nil
   end
 end
