@@ -40,11 +40,6 @@ defmodule ParroquiaxWeb.PageLiveTest do
     assert ausentes_ul |> Floki.text() =~ "qr2"
     assert ausentes_ul |> Floki.text() =~ "qr4"
     refute ausentes_ul |> Floki.text() =~ "qr3"
-
-    # Desconocidos (same as Presentes for now)
-    desconocidos_ul = Floki.find(rendered_view, "ul#desconocidos-entries")
-    assert length(Floki.find(rendered_view, "ul#desconocidos-entries li[data-testid=qr-entry]")) == 1
-    assert desconocidos_ul |> Floki.text() =~ "qr3"
   end
 
   test "handle_info updates qr_entries with matching entry", %{loc2: loc2} do
@@ -61,10 +56,6 @@ defmodule ParroquiaxWeb.PageLiveTest do
     rendered_view = render(view)
 
     assert length(Floki.find(rendered_view, "ul#presentes-entries li[data-testid=qr-entry]")) == 2
-    assert rendered_view =~ "new_qr"
-    assert rendered_view =~ "qr3"
-
-    assert length(Floki.find(rendered_view, "ul#desconocidos-entries li[data-testid=qr-entry]")) == 2
     assert rendered_view =~ "new_qr"
     assert rendered_view =~ "qr3"
 
@@ -87,11 +78,6 @@ defmodule ParroquiaxWeb.PageLiveTest do
     presentes_ul = Floki.find(rendered_view, "ul#presentes-entries")
     assert length(Floki.find(rendered_view, "ul#presentes-entries li[data-testid=qr-entry]")) == 1
     refute presentes_ul |> Floki.text() =~ "new_qr_non_matching"
-    assert rendered_view =~ "qr3"
-
-    desconocidos_ul = Floki.find(rendered_view, "ul#desconocidos-entries")
-    assert length(Floki.find(rendered_view, "ul#desconocidos-entries li[data-testid=qr-entry]")) == 1
-    refute desconocidos_ul |> Floki.text() =~ "new_qr_non_matching"
     assert rendered_view =~ "qr3"
 
     assert length(Floki.find(rendered_view, "ul#ausentes-entries li[data-testid=qr-entry]")) == 4

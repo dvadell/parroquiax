@@ -39,13 +39,10 @@ defmodule ParroquiaxWeb.PageLive do
     ausentes_entries =
       Enum.map(Enum.to_list(ausentes_qrs), fn qr -> %{qr: qr, expanded: false} end)
 
-    desconocidos_entries = Enum.map(presentes_entries, fn entry -> Map.put(entry, :expanded, false) end)
-
     {:ok,
      assign(socket,
        presentes_entries: presentes_entries,
-       ausentes_entries: ausentes_entries,
-       desconocidos_entries: desconocidos_entries
+       ausentes_entries: ausentes_entries
      )}
   end
 
@@ -65,15 +62,13 @@ defmodule ParroquiaxWeb.PageLive do
     # Initialize lists from socket assigns
     presentes_entries = socket.assigns.presentes_entries
     ausentes_entries = socket.assigns.ausentes_entries
-    desconocidos_entries = socket.assigns.desconocidos_entries
 
     # Prepare the new entry with expanded: false
     new_entry_with_expanded = Map.put(new_qr_entry, :expanded, false)
 
     if new_qr_entry.epoch == current_epoch do
-      # Add to Presentes and Desconocidos
+      # Add to Presentes
       updated_presentes = [new_entry_with_expanded | presentes_entries]
-      updated_desconocidos = [new_entry_with_expanded | desconocidos_entries]
 
       # Remove from Ausentes if it was there
       updated_ausentes = Enum.reject(ausentes_entries, fn entry -> entry.qr == new_qr_entry.qr end)
@@ -81,22 +76,19 @@ defmodule ParroquiaxWeb.PageLive do
       {:noreply,
        assign(socket,
          presentes_entries: updated_presentes,
-         ausentes_entries: updated_ausentes,
-         desconocidos_entries: updated_desconocidos
+         ausentes_entries: updated_ausentes
        )}
     else
       # Add to Ausentes
       updated_ausentes = [new_entry_with_expanded | ausentes_entries]
 
-      # Remove from Presentes and Desconocidos if it was there (less likely for new entry, but good for consistency)
+      # Remove from Presentes if it was there (less likely for new entry, but good for consistency)
       updated_presentes = Enum.reject(presentes_entries, fn entry -> entry.qr == new_qr_entry.qr end)
-      updated_desconocidos = Enum.reject(desconocidos_entries, fn entry -> entry.qr == new_qr_entry.qr end)
 
       {:noreply,
        assign(socket,
          presentes_entries: updated_presentes,
-         ausentes_entries: updated_ausentes,
-         desconocidos_entries: updated_desconocidos
+         ausentes_entries: updated_ausentes
        )}
     end
   end
@@ -108,7 +100,6 @@ defmodule ParroquiaxWeb.PageLive do
       case group do
         "presentes" -> :presentes_entries
         "ausentes" -> :ausentes_entries
-        "desconocidos" -> :desconocidos_entries
         _group -> raise "Unknown group: #{group}"
       end
 
@@ -174,34 +165,6 @@ defmodule ParroquiaxWeb.PageLive do
             <%= if qr_entry.expanded do %>
               <p><strong>Location:</strong> N/A</p>
               <p><strong>Date:</strong> N/A</p>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
-
-      <h1 class="text-3xl font-bold mb-4 mt-8">Desconocidos</h1>
-      <ul id="desconocidos-entries" class="list-disc pl-5">
-        <%= for {qr_entry, index} <- Enum.with_index(@desconocidos_entries) do %>
-          <li
-            class="mb-2 p-2 border rounded-lg shadow-sm cursor-pointer"
-            data-testid="qr-entry"
-            phx-click="toggle-expand"
-            phx-value-index={index}
-            phx-value-group="desconocidos"
-          >
-            <div class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 mr-2">
-                <path
-                  fill-rule="evenodd"
-                  d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1 -9 0Zm-3.75 9a4.5 4.5 0 0 1 9 0v2.25c0 1.15-.172 2.29-.431 3.397a6.75 6.75 0 0 1 -9.138 0A12.002 12.002 0 0 1 3.75 17.25V15Zm16.5 0a4.5 4.5 0 0 0 -9 0v2.25c0 1.15.172 2.29.431 3.397a6.75 6.75 0 0 0 9.138 0A12.002 12.002 0 0 0 20.25 17.25V15Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <p><strong>QR:</strong> {qr_entry.qr}</p>
-            </div>
-            <%= if qr_entry.expanded do %>
-              <p><strong>Location:</strong> {qr_entry.location}</p>
-              <p><strong>Date:</strong> {qr_entry.date}</p>
             <% end %>
           </li>
         <% end %>
