@@ -114,6 +114,14 @@ defmodule ParroquiaxWeb.PageLiveTest do
     refute Floki.text(rendered_view_after_second_click) =~ "Date:"
   end
 
+  test "modal is not visible on mount", %{} do
+    {:ok, view, _html} = live(build_conn(), "/")
+    modal = Floki.find(render(view), "#delete-modal")
+    classes = hd(Floki.attribute(modal, "class"))
+    assert "modal" in String.split(classes)
+    refute "modal-open" in String.split(classes)
+  end
+
   test "deletes a presente entry", %{loc2: loc2} do
     {:ok, view, _html} = live(build_conn(), "/")
 
@@ -126,7 +134,9 @@ defmodule ParroquiaxWeb.PageLiveTest do
     |> element(~s(a[phx-value-id="#{presente_entry.id}"]))
     |> render_click()
 
-    assert render(view) =~ "Esta seguro que quiere borrar esta entrada?"
+    modal = Floki.find(render(view), "#delete-modal")
+    classes = hd(Floki.attribute(modal, "class"))
+    assert "modal-open" in String.split(classes)
 
     # Click "Borrar" in modal
     view
@@ -135,6 +145,10 @@ defmodule ParroquiaxWeb.PageLiveTest do
 
     refute render(view) =~ "qr3"
     assert Repo.get(QrEntry, presente_entry.id) == nil
+
+    modal_after_click = Floki.find(render(view), "#delete-modal")
+    classes_after_click = hd(Floki.attribute(modal_after_click, "class"))
+    refute "modal-open" in String.split(classes_after_click)
   end
 
   test "cancels deleting a presente entry", %{loc2: loc2} do
@@ -149,7 +163,9 @@ defmodule ParroquiaxWeb.PageLiveTest do
     |> element(~s(a[phx-value-id="#{presente_entry.id}"]))
     |> render_click()
 
-    assert render(view) =~ "Esta seguro que quiere borrar esta entrada?"
+    modal = Floki.find(render(view), "#delete-modal")
+    classes = hd(Floki.attribute(modal, "class"))
+    assert "modal-open" in String.split(classes)
 
     # Click "Cancelar" in modal
     view
@@ -158,6 +174,10 @@ defmodule ParroquiaxWeb.PageLiveTest do
 
     assert render(view) =~ "qr3"
     assert Repo.get(QrEntry, presente_entry.id) != nil
+
+    modal_after_click = Floki.find(render(view), "#delete-modal")
+    classes_after_click = hd(Floki.attribute(modal_after_click, "class"))
+    refute "modal-open" in String.split(classes_after_click)
   end
 
   test "deletes an ausente entry", %{} do
@@ -170,7 +190,9 @@ defmodule ParroquiaxWeb.PageLiveTest do
     |> element(~s(a[phx-value-qr="qr1"]))
     |> render_click()
 
-    assert render(view) =~ "Esta seguro que quiere borrar esta entrada?"
+    modal = Floki.find(render(view), "#delete-modal")
+    classes = hd(Floki.attribute(modal, "class"))
+    assert "modal-open" in String.split(classes)
 
     # Click "Borrar" in modal
     view
@@ -179,5 +201,9 @@ defmodule ParroquiaxWeb.PageLiveTest do
 
     refute render(view) =~ "qr1"
     assert Repo.get_by(QrEntry, qr: "qr1") == nil
+
+    modal_after_click = Floki.find(render(view), "#delete-modal")
+    classes_after_click = hd(Floki.attribute(modal_after_click, "class"))
+    refute "modal-open" in String.split(classes_after_click)
   end
 end
