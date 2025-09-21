@@ -21,12 +21,30 @@ defmodule ParroquiaxWeb.PageLiveTest do
     {:ok, %{loc1: loc1, loc2: loc2}}
   end
 
-  test "mount correctly filters qr_entries", %{loc2: _loc2} do
+  test "mount correctly filters qr_entries", %{loc1: _loc1, loc2: _loc2} do
     {:ok, view, _html} = live(build_conn(), "/")
+    rendered_view = render(view)
 
-    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 1
-    assert render(view) =~ "qr3"
-    refute render(view) =~ "qr1"
+    # Presentes (current epoch: loc2.current_epoch)
+    presentes_ul = Floki.find(rendered_view, "ul#presentes-entries")
+    assert length(Floki.find(rendered_view, "ul#presentes-entries li[data-testid=qr-entry]")) == 1
+    assert presentes_ul |> Floki.text() =~ "qr3"
+    refute presentes_ul |> Floki.text() =~ "qr1"
+    refute presentes_ul |> Floki.text() =~ "qr2"
+    refute presentes_ul |> Floki.text() =~ "qr4"
+
+    # Ausentes (not in current epoch, but in database)
+    ausentes_ul = Floki.find(rendered_view, "ul#ausentes-entries")
+    assert length(Floki.find(rendered_view, "ul#ausentes-entries li[data-testid=qr-entry]")) == 3
+    assert ausentes_ul |> Floki.text() =~ "qr1"
+    assert ausentes_ul |> Floki.text() =~ "qr2"
+    assert ausentes_ul |> Floki.text() =~ "qr4"
+    refute ausentes_ul |> Floki.text() =~ "qr3"
+
+    # Desconocidos (same as Presentes for now)
+    desconocidos_ul = Floki.find(rendered_view, "ul#desconocidos-entries")
+    assert length(Floki.find(rendered_view, "ul#desconocidos-entries li[data-testid=qr-entry]")) == 1
+    assert desconocidos_ul |> Floki.text() =~ "qr3"
   end
 
   test "handle_info updates qr_entries with matching entry", %{loc2: loc2} do
@@ -40,26 +58,72 @@ defmodule ParroquiaxWeb.PageLiveTest do
     }
 
     Phoenix.PubSub.broadcast(@topic, "new_qr_entry", new_qr_entry)
+    rendered_view = render(view)
 
-    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 2
-    assert render(view) =~ "new_qr"
-    assert render(view) =~ "qr3"
+    assert length(Floki.find(rendered_view, "ul#presentes-entries li[data-testid=qr-entry]")) == 2
+    assert rendered_view =~ "new_qr"
+    assert rendered_view =~ "qr3"
+
+    assert length(Floki.find(rendered_view, "ul#desconocidos-entries li[data-testid=qr-entry]")) == 2
+    assert rendered_view =~ "new_qr"
+    assert rendered_view =~ "qr3"
+
+    assert length(Floki.find(rendered_view, "ul#ausentes-entries li[data-testid=qr-entry]")) == 3
   end
 
   test "handle_info does not update qr_entries with non-matching entry", %{loc1: loc1} do
     {:ok, view, _html} = live(build_conn(), "/")
 
     new_qr_entry = %QrEntry{
-      qr: "new_qr",
+      qr: "new_qr_non_matching",
       location: "loc1",
       epoch: loc1.current_epoch - 1,
       date: ~U[2023-01-01 23:00:07Z]
     }
 
     Phoenix.PubSub.broadcast(@topic, "new_qr_entry", new_qr_entry)
+    rendered_view = render(view)
 
-    assert length(Floki.find(render(view), "li[data-testid=qr-entry]")) == 1
-    refute render(view) =~ "new_qr"
-    assert render(view) =~ "qr3"
+    presentes_ul = Floki.find(rendered_view, "ul#presentes-entries")
+    assert length(Floki.find(rendered_view, "ul#presentes-entries li[data-testid=qr-entry]")) == 1
+    refute presentes_ul |> Floki.text() =~ "new_qr_non_matching"
+    assert rendered_view =~ "qr3"
+
+    desconocidos_ul = Floki.find(rendered_view, "ul#desconocidos-entries")
+    assert length(Floki.find(rendered_view, "ul#desconocidos-entries li[data-testid=qr-entry]")) == 1
+    refute desconocidos_ul |> Floki.text() =~ "new_qr_non_matching"
+    assert rendered_view =~ "qr3"
+
+    assert length(Floki.find(rendered_view, "ul#ausentes-entries li[data-testid=qr-entry]")) == 4
+    assert rendered_view =~ "new_qr_non_matching"
+  end
+
+  test "toggles expand/collapse on click", %{loc2: loc2} do
+    {:ok, view, _html} = live(build_conn(), "/")
+    rendered_view = render(view)
+
+    # Find the first "Presentes" item
+    presentes_item_selector = "ul#presentes-entries li[data-testid=qr-entry]"
+    presentes_item_elements = Floki.find(rendered_view, presentes_item_selector)
+    presentes_item = hd(presentes_item_elements)
+
+    # Assert it's initially collapsed (location and date not visible)
+    refute Floki.text(presentes_item) =~ "Location:"
+    refute Floki.text(presentes_item) =~ "Date:"
+
+    # Click to expand
+    rendered_view_after_click = view |> element(presentes_item_selector) |> render_click()
+
+    # Assert it's now expanded
+    assert Floki.text(rendered_view_after_click) =~ "Location: #{loc2.location}"
+    assert Floki.text(rendered_view_after_click) =~ "Date:"
+
+    # Click to collapse again
+    rendered_view_after_second_click =
+      view |> element(presentes_item_selector) |> render_click()
+
+    # Assert it's collapsed again
+    refute Floki.text(rendered_view_after_second_click) =~ "Location:"
+    refute Floki.text(rendered_view_after_second_click) =~ "Date:"
   end
 end
