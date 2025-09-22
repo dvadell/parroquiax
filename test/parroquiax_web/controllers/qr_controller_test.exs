@@ -49,6 +49,19 @@ defmodule ParroquiaxWeb.QrControllerTest do
       assert qr_entry.epoch == location.current_epoch
     end
 
+    test "discards duplicate qr_entry and returns ok", %{conn: conn} do
+      # First request: create the entry
+      conn = post(conn, ~p"/api/qr", @valid_attrs)
+      assert %{"id" => _id} = json_response(conn, 201)
+
+      # Second request with the same data: should be discarded
+      conn = post(conn, ~p"/api/qr", @valid_attrs)
+      assert %{"message" => "Duplicate QR code. Entry discarded."} = json_response(conn, 200)
+
+      # Verify that only one entry exists in the database
+      assert Repo.all(QrEntry) |> Enum.count() == 1
+    end
+
     test "returns bad request when qr is missing", %{conn: conn} do
       conn = post(conn, ~p"/api/qr", %{"location" => "some location"})
       assert %{"error" => "Missing required fields: qr and location"} = json_response(conn, 400)
