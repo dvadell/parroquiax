@@ -54,8 +54,10 @@ defmodule ParroquiaxWeb.PageLive do
     {:noreply, socket}
   end
 
+  # Reset locations is the same logic as `mount/3`
   def handle_info(nil, socket) do
-    {:noreply, assign(socket, :qr_entries, [])}
+    {:ok, socket} = mount(nil, nil, socket)
+    {:noreply, socket}
   end
 
   def handle_info(new_qr_entry, socket) do
