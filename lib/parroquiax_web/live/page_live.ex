@@ -200,7 +200,7 @@ defmodule ParroquiaxWeb.PageLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  <p><strong>QR:</strong> {qr_entry.qr}</p>
+                  <p class="break-all"><strong>QR:</strong> {qr_entry.qr}</p>
                 </div>
                 <%= if qr_entry.expanded do %>
                   <p><strong>Location:</strong> {qr_entry.location}</p>
@@ -240,7 +240,7 @@ defmodule ParroquiaxWeb.PageLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  <p><strong>QR:</strong> {qr_entry.qr}</p>
+                  <p class="break-all"><strong>QR:</strong> {qr_entry.qr}</p>
                 </div>
                 <%= if qr_entry.expanded do %>
                   <p><strong>Location:</strong> N/A</p>
