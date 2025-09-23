@@ -59,7 +59,7 @@ defmodule ParroquiaxWeb.QrControllerTest do
       assert %{"message" => "Duplicate QR code. Entry discarded."} = json_response(conn, 200)
 
       # Verify that only one entry exists in the database
-      assert Repo.all(QrEntry) |> Enum.count() == 1
+      assert Enum.count(Repo.all(QrEntry)) == 1
     end
 
     test "returns bad request when qr is missing", %{conn: conn} do
