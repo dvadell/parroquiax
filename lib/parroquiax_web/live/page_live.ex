@@ -181,7 +181,9 @@ defmodule ParroquiaxWeb.PageLive do
       </.modal>
 
       <div class="w-full p-4 bg-white">
-        <h1 class="text-3xl font-bold mb-4">Presentes</h1>
+        <h1 class="text-3xl font-bold mb-4">
+          Presentes <span class="text-gray-500 text-xl">({Enum.count(@presentes_entries)})</span>
+        </h1>
         <ul id="presentes-entries" class="list-disc pl-5">
           <%= for {qr_entry, index} <- Enum.with_index(@presentes_entries) do %>
             <li
@@ -221,7 +223,9 @@ defmodule ParroquiaxWeb.PageLive do
           <% end %>
         </ul>
 
-        <h1 class="text-3xl font-bold mb-4 mt-8">Ausentes</h1>
+        <h1 class="text-3xl font-bold mb-4 mt-8">
+          Ausentes <span class="text-gray-500 text-xl">({Enum.count(@ausentes_entries)})</span>
+        </h1>
         <ul id="ausentes-entries" class="list-disc pl-5">
           <%= for {qr_entry, index} <- Enum.with_index(@ausentes_entries) do %>
             <li
